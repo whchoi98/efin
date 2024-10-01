@@ -1469,7 +1469,6 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-Public-Subnet-B"
 
-
   FWOUTSubnetA:
     Description: FWOUTSubnetA
     Value: !Ref FWOUTSubnetA
@@ -1480,7 +1479,7 @@ Outputs:
     Description: FWOUTSubnetB
     Value: !Ref FWOUTSubnetB
     Export:
-      Name: !Sub "${AWS::StackName}-NATGW-Subnet-B"
+      Name: !Sub "${AWS::StackName}-FWOUT-Subnet-B"
 
   PrivateSubnetA:
     Description: PublicSubnetA
