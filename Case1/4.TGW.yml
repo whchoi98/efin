@@ -160,7 +160,7 @@ Resources:
     Properties:
       TransitGatewayAttachmentId: !Ref TransitGatewayAttachmentVPC01
       DestinationCidrBlock: !Ref VPC01CIDRBlock
-      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTableVPCOUT
+      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTableDMZVPC
 
   TransitGatewayRoute01VPC01:
     Type: AWS::EC2::TransitGatewayRoute
