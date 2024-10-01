@@ -342,7 +342,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: !Ref FNATGWABlock
+      CidrBlock: !Ref NATGWABlock
       AvailabilityZone: !Ref AvailabilityZoneA
       MapPublicIpOnLaunch: "true"
       Tags:
