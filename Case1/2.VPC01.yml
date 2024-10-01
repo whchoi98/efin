@@ -706,8 +706,8 @@ Resources:
       FirewallPolicyArn: !Ref VPC01FWPolicy
       VpcId: !Ref VPC
       SubnetMappings:
-        - SubnetId: !Ref VPC01FWSubnetA
-        - SubnetId: !Ref VPC01FWSubnetB
+        - SubnetId: !Ref FWSubnetA
+        - SubnetId: !Ref FWSubnetB
       Tags:
         - Key: Name
           Value: !Sub "VPC01FW-${AWS::StackName}"

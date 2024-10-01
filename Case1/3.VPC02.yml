@@ -67,7 +67,7 @@ Parameters:
     Type: String
     Default: 0.0.0.0/0
     Description: "Enter desired CIDR to Default route"
-    
+
   InstanceType:
     Type: String
     Default: t3.small
@@ -705,8 +705,8 @@ Resources:
       FirewallPolicyArn: !Ref VPC02FWPolicy
       VpcId: !Ref VPC
       SubnetMappings:
-        - SubnetId: !Ref VPC02FWSubnetA
-        - SubnetId: !Ref VPC02FWSubnetB
+        - SubnetId: !Ref FWSubnetA
+        - SubnetId: !Ref FWSubnetB
       Tags:
         - Key: Name
           Value: !Sub "VPC02FW-${AWS::StackName}"
