@@ -63,6 +63,11 @@ Parameters:
     Default: 10.2.252.0/24
     Description: "CidrBlock for AZ A TGW subnet A within the VPC"
 
+  DefaultRouteBlock:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: "Enter desired CIDR to Default route"
+    
   InstanceType:
     Type: String
     Default: t3.small
