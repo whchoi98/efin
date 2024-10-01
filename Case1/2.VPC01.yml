@@ -226,14 +226,14 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateSubnetARouteTable
       DestinationCidrBlock: !Ref DefaultRouteBlock
-      VpcEndpointId: !GetAtt FWVpceIds.FwVpceId1
+      VpcEndpointId: !GetAtt VPC01FWVpceIds.FwVpceId1
 
   PrivateRouteTableB1:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PrivateSubnetBRouteTable
       DestinationCidrBlock: !Ref DefaultRouteBlock
-      VpcEndpointId: !GetAtt FWVpceIds.FwVpceId2
+      VpcEndpointId: !GetAtt VPC01FWVpceIds.FwVpceId2
 #############################################################
 # Create-TGW-Subnet: Create VPC TGW_Subnet_a,b,c,d #
 #############################################################
@@ -280,14 +280,14 @@ Resources:
     Properties:
       RouteTableId: !Ref TGWSubnetARouteTable
       DestinationCidrBlock: !Ref PrivateSubnetABlock
-      VpcEndpointId: !GetAtt FWVpceIds.FwVpceId1
+      VpcEndpointId: !GetAtt VPC01FWVpceIds.FwVpceId1
 
   TGWRouteTableB1:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref TGWSubnetBRouteTable
       DestinationCidrBlock: !Ref PrivateSubnetABlock
-      VpcEndpointId: !GetAtt FWVpceIds.FwVpceId2
+      VpcEndpointId: !GetAtt VPC01FWVpceIds.FwVpceId2
 
 #####################################################################
 # Create-TGW-RouteTable: Create VPC_TGW_RouteTable_a,b,c,d #
@@ -592,10 +592,10 @@ Resources:
 #Firewall
 ###############
 
-  FWINStrictModeStatefulRuleGroup:
+  VPC01FWStrictModeStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
-      RuleGroupName: !Sub "FWIN-strictmode-${AWS::StackName}"
+      RuleGroupName: !Sub "VPC01FW-strictmode-${AWS::StackName}"
       Type: STATEFUL
       Capacity: 100
       RuleGroup:
@@ -645,12 +645,12 @@ Resources:
           RuleOrder: STRICT_ORDER
       Tags:
         - Key: Name
-          Value: !Sub "FWIN-STRICTMODE-${AWS::StackName}"
+          Value: !Sub "VPC01FW-STRICTMODE-${AWS::StackName}"
           
-  FWINDomainAllowStatefulRuleGroup:
+  VPC01FWDomainAllowStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
-      RuleGroupName: !Sub "FWIN-domain-allow-${AWS::StackName}"
+      RuleGroupName: !Sub "VPC01FW-domain-allow-${AWS::StackName}"
       Type: STATEFUL
       Capacity: 100
       RuleGroup:
@@ -671,65 +671,163 @@ Resources:
           RuleOrder: STRICT_ORDER
       Tags:
         - Key: Name
-          Value: !Sub "FWIN-domain-allow-${AWS::StackName}"
+          Value: !Sub "VPC01FW-domain-allow-${AWS::StackName}"
 
-  FWINPolicy:
+  VPC01FWPolicy:
     Type: AWS::NetworkFirewall::FirewallPolicy
     Properties:
-      FirewallPolicyName: !Sub "FWIN-firewall-policy-${AWS::StackName}"
+      FirewallPolicyName: !Sub "VPC01FW-firewall-policy-${AWS::StackName}"
       FirewallPolicy:
         StatelessDefaultActions:
           - 'aws:forward_to_sfe'
         StatelessFragmentDefaultActions:
           - 'aws:forward_to_sfe'
         StatefulRuleGroupReferences:
-          - ResourceArn: !Ref FWINDomainAllowStatefulRuleGroup
+          - ResourceArn: !Ref VPC01FWDomainAllowStatefulRuleGroup
             Priority: 2
-          - ResourceArn: !Ref FWINStrictModeStatefulRuleGroup
+          - ResourceArn: !Ref VPC01FWStrictModeStatefulRuleGroup
             Priority: 1
         StatefulEngineOptions:
           RuleOrder: STRICT_ORDER
       Tags:
         - Key: Name
-          Value: !Sub "FWIN-firewall-policy-${AWS::StackName}"
+          Value: !Sub "VPC01FW-firewall-policy-${AWS::StackName}"
 
-  FWIN:
+  VPC01FW:
     Type: AWS::NetworkFirewall::Firewall
     Properties:
-      FirewallName: !Sub "FWIN-${AWS::StackName}"
-      FirewallPolicyArn: !Ref FWINPolicy
+      FirewallName: !Sub "VPC01FW-${AWS::StackName}"
+      FirewallPolicyArn: !Ref VPC01FWPolicy
       VpcId: !Ref VPC
       SubnetMappings:
-        - SubnetId: !Ref FWINSubnetA
-        - SubnetId: !Ref FWINSubnetB
+        - SubnetId: !Ref VPC01FWSubnetA
+        - SubnetId: !Ref VPC01FWSubnetB
       Tags:
         - Key: Name
-          Value: !Sub "FWIN-${AWS::StackName}"
+          Value: !Sub "VPC01FW-${AWS::StackName}"
 
-  FWINLogFlowGroup:
+  VPC01FWLogFlowGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/${AWS::StackName}/FWIN/flow"
+      LogGroupName: !Sub "/${AWS::StackName}/VPC01FW/flow"
 
-  FWINLogAlertGroup:
+  VPC01FWLogAlertGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/${AWS::StackName}/FWIN/alert"
+      LogGroupName: !Sub "/${AWS::StackName}/VPC01FW/alert"
       
-  FWINLog:
+  VPC01FWLog:
     Type: AWS::NetworkFirewall::LoggingConfiguration
     Properties:
-      FirewallArn: !Ref FWIN
+      FirewallArn: !Ref VPC01FW
       LoggingConfiguration:
         LogDestinationConfigs:
           - LogType: FLOW
             LogDestinationType: CloudWatchLogs
             LogDestination:
-              logGroup: !Sub "/${AWS::StackName}/FWIN/flow"
+              logGroup: !Sub "/${AWS::StackName}/VPC01FW/flow"
           - LogType: ALERT
             LogDestinationType: CloudWatchLogs
             LogDestination:
-              logGroup: !Sub "/${AWS::StackName}/FWIN/alert"
+              logGroup: !Sub "/${AWS::StackName}/VPC01FW/alert"
+###############################################
+# Firewall Endpoint Id Retrieval Lambda Role:
+###############################################
+
+  FwLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-${AWS::Region}-nfw-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt RetrieveVpcIdLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - network-firewall:DescribeFirewall
+                Resource: "*"
+
+# Retrieve VpceId Lambda Custom Resource:
+  RetrieveVpcIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+        LogGroupName: !Sub /aws/lambda/${AWS::StackName}-retrieve-vpceid
+        RetentionInDays: 1
+
+  RetrieveVpceId:
+    Type: AWS::Lambda::Function
+    DependsOn: RetrieveVpcIdLogGroup
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-retrieve-vpceid
+      Handler: "index.handler"
+      Role: !GetAtt
+        - FwLambdaExecutionRole
+        - Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import logging
+          def handler(event, context):
+              logger = logging.getLogger()
+              logger.setLevel(logging.INFO)
+              responseData = {}
+              responseStatus = cfnresponse.FAILED
+              logger.info('Received event: {}'.format(json.dumps(event)))
+              if event["RequestType"] == "Delete":
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+              if event["RequestType"] == "Create":
+                  try:
+                      Az1 = event["ResourceProperties"]["Az1"]
+                      Az2 = event["ResourceProperties"]["Az2"]
+                      FwArn = event["ResourceProperties"]["FwArn"]
+                  except Exception as e:
+                      logger.info('AZ retrieval failure: {}'.format(e))
+                  try:
+                      nfw = boto3.client('network-firewall')
+                  except Exception as e:
+                      logger.info('boto3.client failure: {}'.format(e))
+                  try:
+                      NfwResponse=nfw.describe_firewall(FirewallArn=FwArn)
+                      VpceId1 = NfwResponse['FirewallStatus']['SyncStates'][Az1]['Attachment']['EndpointId']
+                      VpceId2 = NfwResponse['FirewallStatus']['SyncStates'][Az2]['Attachment']['EndpointId']
+                  except Exception as e:
+                      logger.info('ec2.describe_firewall failure: {}'.format(e))
+                  responseData['FwVpceId1'] = VpceId1
+                  responseData['FwVpceId2'] = VpceId2
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+      Runtime: python3.12
+      Timeout: 30
+############################
+# FWINVpceIds.FwVpceId1 , FWINVpceIds.FwVpceId2
+############################
+
+  VPC01FWVpceIds:
+    Type: Custom::DescribeVpcEndpoints
+    Properties:
+      ServiceToken: !GetAtt RetrieveVpceId.Arn
+      Az1: !Ref AvailabilityZoneA
+      Az2: !Ref AvailabilityZoneB
+      FwArn: !Ref VPC01FW
 
 ###############
 # VPC Outputs #

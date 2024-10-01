@@ -11,6 +11,8 @@ Metadata:
          - VPCCIDRBlock
          - PrivateSubnetABlock
          - PrivateSubnetBBlock
+         - FWABlock
+         - FWBBlock
          - TGWSubnetABlock
          - TGWSubnetBBlock
          - InstanceType
@@ -30,6 +32,16 @@ Parameters:
     Type: String
     Default: 10.2.0.0/16
     Description: "The CIDR range for the VPC. This should be a valid private (RFC 1918) CIDR range."
+
+  FWABlock:
+    Type: String
+    Default: 10.2.1.0/24
+    Description: "CidrBlock for AZ A FW subnet A within the VPC"   
+
+  FWBBlock:
+    Type: String
+    Default: 10.2.2.0/24
+    Description: "CidrBlock for AZ B FW subnet B within the VPC"
 
   PrivateSubnetABlock:
     Type: String
@@ -95,6 +107,59 @@ Resources:
           Value: !Sub '${AWS::StackName}'
         - Key: project
           Value: !Sub '${AWS::StackName}'
+###############################################
+# Create-FW-Subnet: VPC FW_Subnet_a,b #
+###############################################
+
+  FWSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref FWABlock
+      AvailabilityZone: !Ref AvailabilityZoneA
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-FW-Subnet-A'
+
+  FWSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref FWBBlock
+      AvailabilityZone: !Ref AvailabilityZoneB
+      MapPublicIpOnLaunch: "true"
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-FW-Subnet-B'
+
+  FWSubnetARouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-FW-RT'
+
+  FWSubnetRouteTableAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref FWSubnetA
+      RouteTableId: !Ref FWSubnetARouteTable
+
+  FWSubnetBRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-FW-B-RT'  
+
+  FWSubnetRouteTableBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref FWSubnetB
+      RouteTableId: !Ref FWSubnetBRouteTable
 
 ########################################################
 # Create-Private-Subnet: Create VPC Private_Subnet_a,b #
@@ -156,7 +221,19 @@ Resources:
       SubnetId: !Ref PrivateSubnetB
       RouteTableId: !Ref PrivateSubnetBRouteTable
 
+  PrivateRouteTableA1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateSubnetARouteTable
+      DestinationCidrBlock: !Ref DefaultRouteBlock
+      VpcEndpointId: !GetAtt VPC02FWVpceIds.FwVpceId1
 
+  PrivateRouteTableB1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateSubnetBRouteTable
+      DestinationCidrBlock: !Ref DefaultRouteBlock
+      VpcEndpointId: !GetAtt VPC02FWVpceIds.FwVpceId2
 #############################################################
 # Create-TGW-Subnet: Create VPC TGW_Subnet_a,b,c,d #
 #############################################################
@@ -198,6 +275,20 @@ Resources:
       SubnetId: !Ref TGWSubnetB
       RouteTableId: !Ref TGWSubnetBRouteTable
 
+  TGWRouteTableA1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref TGWSubnetARouteTable
+      DestinationCidrBlock: !Ref PrivateSubnetABlock
+      VpcEndpointId: !GetAtt VPC02FWVpceIds.FwVpceId1
+
+  TGWRouteTableB1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref TGWSubnetBRouteTable
+      DestinationCidrBlock: !Ref PrivateSubnetABlock
+      VpcEndpointId: !GetAtt VPC02FWVpceIds.FwVpceId2
+
 #####################################################################
 # Create-TGW-RouteTable: Create VPC_TGW_RouteTable_a,b,c,d #
 #####################################################################
@@ -224,7 +315,7 @@ Resources:
   ServerRoleSSM:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${AWS::StackName}-Case4-SSMRole'
+      RoleName: !Sub '${AWS::StackName}-Case1VPC02-SSMRole'
       Path: "/"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
@@ -425,10 +516,6 @@ Resources:
             cd /var/www/html/;
             sudo git clone https://github.com/whchoi98/ec2meta-webpage.git;
             sudo systemctl restart httpd;
-            git clone https://github.com/gcla/termshark.git;
-            cd ~/termshark/;
-            go get github.com/gcla/termshark/v2/cmd/termshark;
-            cd ~;
             exit
 
   PrivateBInstanace2:
@@ -469,10 +556,6 @@ Resources:
             cd /var/www/html/;
             sudo git clone https://github.com/whchoi98/ec2meta-webpage.git;
             sudo systemctl restart httpd;
-            git clone https://github.com/gcla/termshark.git;
-            cd ~/termshark/;
-            go get github.com/gcla/termshark/v2/cmd/termshark;
-            cd ~;
             exit
 
 ######################################################################
@@ -504,7 +587,248 @@ Resources:
         - Ref: PrivateSubnetB
       SecurityGroupIds:
         - Ref: SSMSG
-   
+
+###############
+#Firewall
+###############
+
+  VPC02FWStrictModeStatefulRuleGroup:
+    Type: 'AWS::NetworkFirewall::RuleGroup'
+    Properties:
+      RuleGroupName: !Sub "VPC02FW-strictmode-${AWS::StackName}"
+      Type: STATEFUL
+      Capacity: 100
+      RuleGroup:
+        RulesSource:
+          StatefulRules:
+            - Action: ALERT
+              Header:
+                Protocol: TCP
+                Source: ANY
+                SourcePort: ANY
+                Direction: ANY
+                Destination: ANY
+                DestinationPort: 80
+              RuleOptions:
+                - Keyword: "sid:1"
+            - Action: ALERT
+              Header:
+                Protocol: TCP
+                Source: ANY
+                SourcePort: ANY
+                Direction: ANY
+                Destination: ANY
+                DestinationPort: 443
+              RuleOptions:
+                - Keyword: "sid:2"
+            - Action: ALERT
+              Header:
+                Protocol: ICMP
+                Source: ANY
+                SourcePort: ANY
+                Direction: ANY
+                Destination: ANY
+                DestinationPort: ANY
+              RuleOptions:
+                - Keyword: "sid:3"
+            - Action: PASS
+              Header:
+                Protocol: IP
+                Source: ANY
+                SourcePort: ANY
+                Direction: ANY
+                Destination: ANY
+                DestinationPort: ANY
+              RuleOptions:
+                - Keyword: "sid:100"
+        StatefulRuleOptions:
+          RuleOrder: STRICT_ORDER
+      Tags:
+        - Key: Name
+          Value: !Sub "VPC02FW-STRICTMODE-${AWS::StackName}"
+          
+  VPC02FWDomainAllowStatefulRuleGroup:
+    Type: 'AWS::NetworkFirewall::RuleGroup'
+    Properties:
+      RuleGroupName: !Sub "VPC02FW-domain-allow-${AWS::StackName}"
+      Type: STATEFUL
+      Capacity: 100
+      RuleGroup:
+        RuleVariables:
+          IPSets:
+            HOME_NET:
+              Definition:
+                - "10.0.0.0/8"
+        RulesSource:
+          RulesSourceList:
+            TargetTypes:
+              - HTTP_HOST
+              - TLS_SNI
+            Targets: 
+              - ".amazon.com"
+            GeneratedRulesType: "ALLOWLIST"
+        StatefulRuleOptions:
+          RuleOrder: STRICT_ORDER
+      Tags:
+        - Key: Name
+          Value: !Sub "VPC02FW-domain-allow-${AWS::StackName}"
+
+  VPC02FWPolicy:
+    Type: AWS::NetworkFirewall::FirewallPolicy
+    Properties:
+      FirewallPolicyName: !Sub "VPC02FW-firewall-policy-${AWS::StackName}"
+      FirewallPolicy:
+        StatelessDefaultActions:
+          - 'aws:forward_to_sfe'
+        StatelessFragmentDefaultActions:
+          - 'aws:forward_to_sfe'
+        StatefulRuleGroupReferences:
+          - ResourceArn: !Ref VPC02FWDomainAllowStatefulRuleGroup
+            Priority: 2
+          - ResourceArn: !Ref VPC02FWStrictModeStatefulRuleGroup
+            Priority: 1
+        StatefulEngineOptions:
+          RuleOrder: STRICT_ORDER
+      Tags:
+        - Key: Name
+          Value: !Sub "VPC02FW-firewall-policy-${AWS::StackName}"
+
+  VPC02FW:
+    Type: AWS::NetworkFirewall::Firewall
+    Properties:
+      FirewallName: !Sub "VPC02FW-${AWS::StackName}"
+      FirewallPolicyArn: !Ref VPC02FWPolicy
+      VpcId: !Ref VPC
+      SubnetMappings:
+        - SubnetId: !Ref VPC02FWSubnetA
+        - SubnetId: !Ref VPC02FWSubnetB
+      Tags:
+        - Key: Name
+          Value: !Sub "VPC02FW-${AWS::StackName}"
+
+  VPC02FWLogFlowGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/${AWS::StackName}/VPC02FW/flow"
+
+  VPC02FWLogAlertGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/${AWS::StackName}/VPC02FW/alert"
+      
+  VPC02FWLog:
+    Type: AWS::NetworkFirewall::LoggingConfiguration
+    Properties:
+      FirewallArn: !Ref VPC02FW
+      LoggingConfiguration:
+        LogDestinationConfigs:
+          - LogType: FLOW
+            LogDestinationType: CloudWatchLogs
+            LogDestination:
+              logGroup: !Sub "/${AWS::StackName}/VPC02FW/flow"
+          - LogType: ALERT
+            LogDestinationType: CloudWatchLogs
+            LogDestination:
+              logGroup: !Sub "/${AWS::StackName}/VPC02FW/alert"
+###############################################
+# Firewall Endpoint Id Retrieval Lambda Role:
+###############################################
+
+  FwLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-${AWS::Region}-nfw-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt RetrieveVpcIdLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - network-firewall:DescribeFirewall
+                Resource: "*"
+
+# Retrieve VpceId Lambda Custom Resource:
+  RetrieveVpcIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+        LogGroupName: !Sub /aws/lambda/${AWS::StackName}-retrieve-vpceid
+        RetentionInDays: 1
+
+  RetrieveVpceId:
+    Type: AWS::Lambda::Function
+    DependsOn: RetrieveVpcIdLogGroup
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-retrieve-vpceid
+      Handler: "index.handler"
+      Role: !GetAtt
+        - FwLambdaExecutionRole
+        - Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import logging
+          def handler(event, context):
+              logger = logging.getLogger()
+              logger.setLevel(logging.INFO)
+              responseData = {}
+              responseStatus = cfnresponse.FAILED
+              logger.info('Received event: {}'.format(json.dumps(event)))
+              if event["RequestType"] == "Delete":
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+              if event["RequestType"] == "Create":
+                  try:
+                      Az1 = event["ResourceProperties"]["Az1"]
+                      Az2 = event["ResourceProperties"]["Az2"]
+                      FwArn = event["ResourceProperties"]["FwArn"]
+                  except Exception as e:
+                      logger.info('AZ retrieval failure: {}'.format(e))
+                  try:
+                      nfw = boto3.client('network-firewall')
+                  except Exception as e:
+                      logger.info('boto3.client failure: {}'.format(e))
+                  try:
+                      NfwResponse=nfw.describe_firewall(FirewallArn=FwArn)
+                      VpceId1 = NfwResponse['FirewallStatus']['SyncStates'][Az1]['Attachment']['EndpointId']
+                      VpceId2 = NfwResponse['FirewallStatus']['SyncStates'][Az2]['Attachment']['EndpointId']
+                  except Exception as e:
+                      logger.info('ec2.describe_firewall failure: {}'.format(e))
+                  responseData['FwVpceId1'] = VpceId1
+                  responseData['FwVpceId2'] = VpceId2
+                  responseStatus = cfnresponse.SUCCESS
+                  cfnresponse.send(event, context, responseStatus, responseData)
+      Runtime: python3.12
+      Timeout: 30
+############################
+# FWINVpceIds.FwVpceId1 , FWINVpceIds.FwVpceId2
+############################
+
+  VPC02FWVpceIds:
+    Type: Custom::DescribeVpcEndpoints
+    Properties:
+      ServiceToken: !GetAtt RetrieveVpceId.Arn
+      Az1: !Ref AvailabilityZoneA
+      Az2: !Ref AvailabilityZoneB
+      FwArn: !Ref VPC02FW
+
 ###############
 # VPC Outputs #
 ###############
@@ -519,13 +843,25 @@ Outputs:
     Description: PrivateSubnetA
     Value: !Ref PrivateSubnetA
     Export:
-      Name: !Sub "${AWS::StackName}-Private-Subnet-A"
+      Name: !Sub "${AWS::StackName}-PrivateSubnet-A"
 
   PrivateSubnetBBlock:
     Description: PrivateSubnetB
     Value: !Ref PrivateSubnetB
     Export:
       Name: !Sub "${AWS::StackName}-Private-Subnet-B"
+
+  FWSubnetABlock:
+    Description: FWSubnetA
+    Value: !Ref FWSubnetA
+    Export:
+      Name: !Sub "${AWS::StackName}-FWSubnet-A"
+
+  FWSubnetBBlock:
+    Description: FWSubnetB
+    Value: !Ref FWSubnetB
+    Export:
+      Name: !Sub "${AWS::StackName}-FWSubnet-B"
 
   TGWSubnetABlock:
     Description: TGWSubnetA
@@ -574,6 +910,30 @@ Outputs:
     Value: !Ref PrivateSubnetBRouteTable
     Export:
       Name: !Sub "${AWS::StackName}-PrivateSubnetBRouteTableID"
+
+  FWARouteTable:
+    Description: FWARouteTableID
+    Value: !Ref FWARouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-FWARouteTableID"
+
+  FWBRouteTable:
+    Description: FWBRouteTableID
+    Value: !Ref FWBRouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-FWBRouteTableID"
+
+  TGWARouteTable:
+    Description: TGWARouteTableID
+    Value: !Ref TGWARouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-TGWARouteTableID"
+
+  TGWBRouteTable:
+    Description: TGWBRouteTableID
+    Value: !Ref TGWBRouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-TGWBRouteTableID"
 
   PrivateAInstanace1:
     Description: PrivateAInstanace1 Private IP
