@@ -713,7 +713,7 @@ Resources:
       SubnetId: !Ref PrivateSubnetB
       RouteTableId: !Ref PrivateSubnetBRouteTable
 
-  PrivateRouteTableA1:
+  PrivateRouteTableB1:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PrivateSubnetBRouteTable
