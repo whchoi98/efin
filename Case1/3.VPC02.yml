@@ -922,23 +922,23 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-FWSubnetARouteTableID"
 
-  FWSubnetARouteTable:
-    Description: FWSubnetARouteTableID
-    Value: !Ref FWSubnetARouteTable
+  FWSubnetBRouteTable:
+    Description: FWSubnetBRouteTableID
+    Value: !Ref FWSubnetBRouteTable
     Export:
-      Name: !Sub "${AWS::StackName}-FWSubnetARouteTableID"
+      Name: !Sub "${AWS::StackName}-FWSubnetBRouteTableID"
 
-  TGWARouteTable:
-    Description: TGWARouteTableID
-    Value: !Ref TGWARouteTable
+  TGWSubnetARouteTable:
+    Description: TGWSubnetARouteTableID
+    Value: !Ref TGWSubnetARouteTable
     Export:
-      Name: !Sub "${AWS::StackName}-TGWARouteTableID"
+      Name: !Sub "${AWS::StackName}-TGWSubnetARouteTableID"
 
-  TGWBRouteTable:
-    Description: TGWBRouteTableID
-    Value: !Ref TGWBRouteTable
+  TGWSubnetBRouteTable:
+    Description: TGWSubnetBRouteTableID
+    Value: !Ref TGWSubnetBRouteTable
     Export:
-      Name: !Sub "${AWS::StackName}-TGWBRouteTableID"
+      Name: !Sub "${AWS::StackName}-TGWSubnetBRouteTableID"
 
   PrivateAInstanace1:
     Description: PrivateAInstanace1 Private IP
