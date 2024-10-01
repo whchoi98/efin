@@ -9,6 +9,7 @@ Metadata:
         Parameters:
          - DefaultRouteBlock
          - AllPrivateBlock
+         - DMZVPCCIDRBlock
          - VPC01CIDRBlock
          - VPC02CIDRBlock
 
@@ -23,6 +24,11 @@ Parameters:
     Type: String
     Default: 10.0.0.0/8
     Description: "Enter desired CIDR to Default route"
+
+  DMZVPCCIDRBlock:
+    Type: String
+    Default: 10.11.0.0/16
+    Description: "Enter desired CIDR to DMZVPC route"
 
   VPC01CIDRBlock:
     Type: String
