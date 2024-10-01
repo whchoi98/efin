@@ -1141,7 +1141,7 @@ Resources:
   FWINALLPERMITStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
-      RuleGroupName: !Sub "allpermit-${AWS::StackName}"
+      RuleGroupName: !Sub "FWIN-allpermit-${AWS::StackName}"
       Type: STATEFUL
       Capacity: 100
       RuleGroup:
@@ -1164,7 +1164,7 @@ Resources:
   FWINICMPAlertStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
-      RuleGroupName: !Sub "icmp-alert-${AWS::StackName}"
+      RuleGroupName: !Sub "FWIN-icmp-alert-${AWS::StackName}"
       Type: STATEFUL
       Capacity: 100
       RuleGroup:
