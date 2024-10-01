@@ -1138,7 +1138,7 @@ Resources:
 #Firewall
 ###############
 
-  FWIN_ALLPERMITStatefulRuleGroup:
+  FWINALLPERMITStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
       RuleGroupName: !Sub "allpermit-${AWS::StackName}"
@@ -1161,7 +1161,7 @@ Resources:
         - Key: Name
           Value: !Sub "FWIN-ALLPERMIT-${AWS::StackName}" 
 
-  FWIN_ICMPAlertStatefulRuleGroup:
+  FWINICMPAlertStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
       RuleGroupName: !Sub "icmp-alert-${AWS::StackName}"
@@ -1184,7 +1184,7 @@ Resources:
         - Key: Name
           Value: !Sub "FWIN-icmp-alert-${AWS::StackName}" 
 
-  FWIN_DomainAllowStatefulRuleGroup:
+  FWINDomainAllowStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
       RuleGroupName: !Sub "FWIN-domain-allow-${AWS::StackName}"
@@ -1209,7 +1209,7 @@ Resources:
           Value: !Sub "FWIN-domain-allow-${AWS::StackName}"   
 
 
-  FWOUT_ALLPERMITStatefulRuleGroup:
+  FWOUTALLPERMITStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
       RuleGroupName: !Sub "FWOUT-allpermit-${AWS::StackName}"
@@ -1232,7 +1232,7 @@ Resources:
         - Key: Name
           Value: !Sub "FWOUT-ALLPERMIT-${AWS::StackName}" 
 
-  FWOUT_ICMPAlertStatefulRuleGroup:
+  FWOUTICMPAlertStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
       RuleGroupName: !Sub "FWOUT-icmp-alert-${AWS::StackName}"
@@ -1255,7 +1255,7 @@ Resources:
         - Key: Name
           Value: !Sub "FWOUT-icmp-alert-${AWS::StackName}" 
 
-  FWOUT_DomainAllowStatefulRuleGroup:
+  FWOUTDomainAllowStatefulRuleGroup:
     Type: 'AWS::NetworkFirewall::RuleGroup'
     Properties:
       RuleGroupName: !Sub "FWOUT-domain-allow-${AWS::StackName}"
@@ -1289,9 +1289,9 @@ Resources:
         StatelessFragmentDefaultActions:
           - 'aws:forward_to_sfe'
         StatefulRuleGroupReferences:
-          - ResourceArn: !Ref FWIN_DomainAllowStatefulRuleGroup
-          - ResourceArn: !Ref FWIN_ALLPERMITStatefulRuleGroup
-          - ResourceArn: !Ref FWIN_ICMPAlertStatefulRuleGroup
+          - ResourceArn: !Ref FWINDomainAllowStatefulRuleGroup
+          - ResourceArn: !Ref FWINALLPERMITStatefulRuleGroup
+          - ResourceArn: !Ref FWINICMPAlertStatefulRuleGroup
       Tags:
         - Key: Name
           Value: !Sub "FWIN-policy-${AWS::StackName}"
@@ -1306,9 +1306,9 @@ Resources:
         StatelessFragmentDefaultActions:
           - 'aws:forward_to_sfe'
         StatefulRuleGroupReferences:
-          - ResourceArn: !Ref FWOUT_DomainAllowStatefulRuleGroup
-          - ResourceArn: !Ref FWOUT_ALLPERMITStatefulRuleGroup
-          - ResourceArn: !Ref FWOUT_ICMPAlertStatefulRuleGroup
+          - ResourceArn: !Ref FWOUTDomainAllowStatefulRuleGroup
+          - ResourceArn: !Ref FWOUTALLPERMITStatefulRuleGroup
+          - ResourceArn: !Ref FWOUTICMPAlertStatefulRuleGroup
       Tags:
         - Key: Name
           Value: !Sub "FWOUT-policy-${AWS::StackName}"
