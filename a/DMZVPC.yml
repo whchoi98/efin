@@ -643,7 +643,7 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref FWOUTSubnetA
-      RouteTableId: !Ref FWOUTsubnetARouteTable
+      RouteTableId: !Ref FWOUTSubnetARouteTable
 
   FWOUTRouteTableA1:
     DependsOn: NatGatewayA
@@ -1541,7 +1541,6 @@ Outputs:
     Value: !Ref PublicSubnetBRouteTable
     Export:
       Name: !Sub "${AWS::StackName}-PublicSubnetBRouteTableID"
-
 
   FWOUTSubnetARouteTable:
     Description: FWOUTSubnetARouteTableID
