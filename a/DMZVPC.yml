@@ -664,8 +664,8 @@ Resources:
   FWOUTSubnetRouteTableBAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref FWOUTSubnetA
-      RouteTableId: !Ref FWOUTSubnetARouteTable
+      SubnetId: !Ref FWOUTSubnetB
+      RouteTableId: !Ref FWOUTSubnetBRouteTable
 
   FWOUTRouteTableB1:
     DependsOn: NatGatewayB
