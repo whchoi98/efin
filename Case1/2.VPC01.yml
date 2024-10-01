@@ -917,17 +917,17 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-PrivateSubnetBRouteTableID"
 
-  FWARouteTable:
-    Description: FWARouteTableID
-    Value: !Ref FWARouteTable
+  FWSubnetARouteTable:
+    Description: FWSubnetARouteTableID
+    Value: !Ref FWSubnetARouteTable
     Export:
-      Name: !Sub "${AWS::StackName}-FWARouteTableID"
+      Name: !Sub "${AWS::StackName}-FWSubnetARouteTableID"
 
-  FWBRouteTable:
-    Description: FWBRouteTableID
-    Value: !Ref FWBRouteTable
+  FWSubnetARouteTable:
+    Description: FWSubnetARouteTableID
+    Value: !Ref FWSubnetARouteTable
     Export:
-      Name: !Sub "${AWS::StackName}-FWBRouteTableID"
+      Name: !Sub "${AWS::StackName}-FWSubnetARouteTableID"
 
   TGWARouteTable:
     Description: TGWARouteTableID
