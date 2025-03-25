@@ -1,0 +1,37 @@
+#1.DMZVPC 배포
+source ~/.bash_profile
+export AWS_REGION=ap-northeast-2
+aws cloudformation deploy \
+  --region ${AWS_REGION} \
+  --stack-name "DMZVPC" \
+  --template-file "~/efin/Case1/1.DMZVPC.yml" \
+  --capabilities CAPABILITY_NAMED_IAM
+
+
+#VPC01 배포
+source ~/.bash_profile
+export AWS_REGION=ap-northeast-2
+aws cloudformation deploy \
+  --region ${AWS_REGION} \
+  --stack-name "VPC01" \
+  --template-file "~/efin/Case1/2.VPC01.yml" \
+  --capabilities CAPABILITY_NAMED_IAM  
+
+
+#VPC02 배포
+source ~/.bash_profile
+export AWS_REGION=ap-northeast-2
+aws cloudformation deploy \
+  --region ${AWS_REGION} \
+  --stack-name "VPC02" \
+  --template-file "~/efin/Case1/3.VPC02.yml" \
+  --capabilities CAPABILITY_NAMED_IAM 
+
+#TGW 배포
+source ~/.bash_profile
+export AWS_REGION=ap-northeast-2
+aws cloudformation deploy \
+  --region ${AWS_REGION} \
+  --stack-name "TGW" \
+  --template-file "~/efin/Case1/4.TGW.yml" \
+  --capabilities CAPABILITY_NAMED_IAM 
