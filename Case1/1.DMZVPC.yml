@@ -743,7 +743,7 @@ Resources:
     Properties:
       RouteTableId: !Ref TGWSubnetARouteTable
       DestinationCidrBlock: !Ref DefaultRouteBlock
-      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId2
+      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId1
 
   TGWSubnetBRouteTable:
     Type: AWS::EC2::RouteTable
