@@ -537,6 +537,7 @@ Resources:
 # Create-RouteTable: NATGW Route Table    #
 ################################################
 
+
   NATGWSubnetARouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -558,6 +559,23 @@ Resources:
       RouteTableId: !Ref NATGWSubnetARouteTable
       DestinationCidrBlock: !Ref DefaultRouteBlock
       GatewayId: !Ref InternetGateway
+      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId1
+
+  NATGWRouteTableA2:
+    DependsOn: VPCGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NATGWSubnetARouteTable
+      DestinationCidrBlock: !Ref VPC1CIDRBlock
+      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId1
+      
+  NATGWRouteTableA3:
+    DependsOn: VPCGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NATGWSubnetARouteTable
+      DestinationCidrBlock: !Ref VPC2CIDRBlock
+      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId1
 
   NATGWSubnetBRouteTable:
     Type: AWS::EC2::RouteTable
@@ -580,6 +598,22 @@ Resources:
       RouteTableId: !Ref NATGWSubnetBRouteTable
       DestinationCidrBlock: !Ref DefaultRouteBlock
       GatewayId: !Ref InternetGateway
+
+  NATGWRouteTableB2:
+    DependsOn: VPCGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NATGWSubnetARouteTable
+      DestinationCidrBlock: !Ref VPC1CIDRBlock
+      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId2
+      
+  NATGWRouteTableB3:
+    DependsOn: VPCGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NATGWSubnetARouteTable
+      DestinationCidrBlock: !Ref VPC2CIDRBlock
+      VpcEndpointId: !GetAtt FWOUTVpceIds.FwVpceId2
 
 ################################################
 # Create-RouteTable: Public Route Table    #
