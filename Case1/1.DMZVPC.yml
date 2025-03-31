@@ -495,7 +495,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FWIN-RT'
+          Value: !Sub '${AWS::StackName}-FWIN-A-RT'
 
   FWINSubnetRouteTableAAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
