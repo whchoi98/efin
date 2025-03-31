@@ -96,6 +96,8 @@ Resources:
       SubnetIds:
         - Fn::ImportValue: !Sub "DMZVPC-TGW-Subnet-A"
         - Fn::ImportValue: !Sub "DMZVPC-TGW-Subnet-B"
+      Options:
+        ApplianceModeSupport: enable
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-Attach-DMZVPC'
@@ -109,6 +111,8 @@ Resources:
       SubnetIds:
         - Fn::ImportValue: !Sub "VPC01-TGW-Subnet-A"
         - Fn::ImportValue: !Sub "VPC01-TGW-Subnet-B"
+      Options:
+        ApplianceModeSupport: enable
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-Attach-VPC01'
@@ -122,6 +126,8 @@ Resources:
       SubnetIds:
         - Fn::ImportValue: !Sub "VPC02-TGW-Subnet-A"
         - Fn::ImportValue: !Sub "VPC02-TGW-Subnet-B"
+      Options:
+        ApplianceModeSupport: enable
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-Attach-VPC02'
